@@ -2,6 +2,7 @@ const { ipcRenderer } = require("electron");
 
 ipcRenderer.on("open-dialog-paths-selected", (event, arg) => {
   console.log(arg);
+  console.timeEnd("csv read");
   dialog.handler.outputSelectedPathsFromOpenDialog(arg);
 });
 

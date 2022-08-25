@@ -4,7 +4,7 @@
   "description": "test CSV",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "start": "electron . ",
     "deploy:osx": "electron-builder --mac",
     "deploy:win": "npm run deploy:win32 && npm run deploy:win64",
     "deploy:win32": "electron-builder --win nsis:ia32",
@@ -56,7 +56,9 @@
   "license": "CC0-1.0",
   "devDependencies": {
     "electron": "^20.0.1",
-    "electron-builder": "^23.3.3"
+    "electron-builder": "^23.3.3",
+    "electron-rebuild": "^3.2.9",
+    "node-pre-gyp": "^0.17.0"
   },
   "dependencies": {
     "@tensorflow/tfjs-node": "^3.19.0",

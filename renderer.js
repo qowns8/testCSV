@@ -10,8 +10,10 @@ window.onload = () => {
 
   // replyInputValue에 대한 응답 수신
   ipcRenderer.on("open-dialog-paths-selected", (evt, payload) => {
-    const columnDefs = Object.keys(payload.$columns).map((field) => ({
-      field,
+    console.log('payload is ', payload)
+    const columnDefs = payload.$columns.map((field, id) => ({
+      headerName: field,
+      field: `${id}`,
       sortable: true,
     }));
 
@@ -38,4 +40,29 @@ window.onload = () => {
 
     // document.getElementById("text-box").textContent = payload;
   });
+  ipcRenderer.on('groupBy-multi', (evt, payload) => {
+    const columnDefs = payload.$columns.map((field, id) => ({
+      headerName: field,
+      field: `${id}`,
+      sortable: true,
+    }));
+
+    // let the grid know which columns and what data to use
+    const gridOptions = {
+      columnDefs,
+    };
+    gridOptions.api.setRowData(state => ([...state, payload.$data]))
+    //      const columnDefs = Object.keys(payload.$columns).map((key) => ({
+    //   field: key,
+    //   sortable: true,
+    // }));
+
+    // // let the grid know which columns and what data to use
+    // const gridOptions = {
+    //   columnDefs,
+    //   rowData: payload.$data,
+    // };
+    const gridDiv = document.querySelector("#myGrid");
+    new agGrid.Grid(gridDiv, gridOptions);
+  })
 };
