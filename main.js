@@ -7,7 +7,8 @@ const {parseCsv, groupByMulti} = require("./shardWorker");
 let data;
 const data2 = [];
 
-let threeResult = []
+let threadResults = []
+let threadCount = 0
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -60,33 +61,34 @@ function createWindow() {
     mainWindow.webContents.send('open-dialog-paths-selected', data[0])
   })
   ipcMain.on('new-browser-thread-groupBy', (event, data) => {
-    console.log('new-browser-thread-groupBy', threeResult.length)
-    if (threeResult.length === 2) {
+    console.log('new-browser-thread-groupBy', threadResults.length)
+    if (threadResults.length === (threadCount - 1)) {
       mainWindow.webContents.send('open-dialog-paths-selected', dfdConcatAndSum(
-          [threeResult[0], threeResult[1], data[0]],
+          [...threadResults, data[0]],
           [
             'attributed_touch_type',
             'event_name'],
           ['appsflyer_id_count']
           ))
       console.timeEnd('new-browser-thread-groupBy');
-      threeResult = []
+      threadResults = []
+      threadCount = 0
     } else {
-      threeResult.push(data[0])
+      threadResults.push(data[0])
     }
   })
   function dfdConcatAndSum(array, groupByCol, selectCol) {
-    // console.log('dfdConcatAndSumArgs', array, groupByCol, selectCol)
-    const r1 = new dfd.DataFrame([...array[0]?.$data, ...array[1]?.$data, ...array[2]?.$data], { columns: array[0]?.$columns, dtypes: array[0]?.$dtypes})
-    console.log('pass r1')
+    console.log('options ', { columns: array[0]?.$columns, dtypes: array[0]?.$dtypes}, array.map(item => item?.$data))
+    const r1 = new dfd.DataFrame(
+        array.flatMap(item => item?.$data),
+        { columns: array[0]?.$columns, dtypes: array[0]?.$dtypes}
+    )
       const r2 =
         r1.groupby(
             groupByCol
         )
         .col(selectCol)
         .sum()
-
-    console.log('pass r2')
     return r2
   }
   // function multiMerge(dfArgs){
@@ -150,9 +152,9 @@ function createWindow() {
         })
         .then(async (result) => {
           const filePaths = result.filePaths;
-          threeResult = []
-          if (filePaths.length !== 3) {
-            console.log('not three')
+          threadResults = []
+          threadCount = filePaths.length
+          if (filePaths.length < 1) {
             return
           }
           console.time('new-browser-thread-groupBy');
